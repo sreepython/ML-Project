@@ -142,7 +142,7 @@ def generate_response(user_input):
     if user_input:
         model_name = "microsoft/phi-2"
         generated_text = generate_text(model_name, user_input)
-        print(generate_text)
+        print(generated_text)
         return (generated_text)
     else:
         return "I'm sorry, I didn't understand that."
