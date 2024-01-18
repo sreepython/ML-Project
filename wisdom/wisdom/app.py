@@ -1,12 +1,20 @@
+"""
+pip install flask-socketio
+
+"""
+
 from flask import Flask, render_template, request, redirect, url_for, flash, session, jsonify
 import sqlite3
 from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime
 from models_script import generate_text
 from celery import Celery
+from flask_socketio import SocketIO
+from flask_socketio import emit
 
 
 app = Flask(__name__)
+socketio = SocketIO(app)
 app.config['SECRET_KEY'] = 'your_secret_key'
 
 celery = Celery(__name__)
@@ -73,6 +81,15 @@ def logout():
     session.clear()
     return redirect(url_for('login'))  # Redirect to login page or another suitable endpoint
 
+
+@socketio.on('user_input')
+def handle_user_input(data):
+    user_input = data['user_input']
+    response = generate_response(user_input)
+    save_user_data(session['username'], response)
+    emit('response', {'response': response}, broadcast=True)
+    
+    
 @app.route('/chat', methods=['GET', 'POST'])
 def chat():
     if 'username' not in session:
@@ -148,4 +165,6 @@ def generate_response(user_input):
         return "I'm sorry, I didn't understand that."
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    # app.run(debug=True)
+    # socketio.run(app, debug=True, host='0.0.0.0', port='5000')
+    socketio.run(app, debug=True)

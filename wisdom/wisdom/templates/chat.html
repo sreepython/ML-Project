@@ -29,4 +29,20 @@
 
     <script src="{{ url_for('static', filename='js/script.js') }}"></script>
 </body>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.1.2/socket.io.js"></script>
+<script type="text/javascript">
+    var socket = io.connect('http://' + document.domain + ':' + location.port);
+
+    $('form#user_input_form').submit(function(event) {
+        event.preventDefault();
+        socket.emit('user_input', { 'user_input': $('#user_input').val() });
+        $('#user_input').val('');
+        return false;
+    });
+
+    socket.on('response', function(data) {
+        // Handle the received response and update the chat interface
+        console.log(data.response);
+    });
+</script>
 </html>
