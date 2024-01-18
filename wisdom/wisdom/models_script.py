@@ -9,6 +9,10 @@ def generate_text(model_name, text, max_length=50):
     # Tokenize input text
     input_ids = tokenizer.encode(text, return_tensors="pt")
 
+    # Move the model and input tensors to CPU
+    model.to("cpu")
+    input_ids = input_ids.to("cpu")
+
     # Generate text using the model
     with torch.no_grad():
         output = model.generate(
@@ -20,16 +24,15 @@ def generate_text(model_name, text, max_length=50):
             top_k=50,
             top_p=0.92,
             temperature=0.75,
-            use_cache=True,
-            device="cpu"  # Use CPU for inference
+            use_cache=True
         )
 
     # Decode the generated text
     generated_text = tokenizer.decode(output[0], skip_special_tokens=True)
     return generated_text
 
-# # Example usage
-# model_name = "microsoft/phi-2"
-# input_text = "Once upon a time"
-# generated_text = generate_text(model_name, input_text)
-# print(generated_text)
+# Example usage
+model_name = "microsoft/phi-2"
+input_text = "Once upon a time"
+generated_text = generate_text(model_name, input_text)
+print(generated_text)
