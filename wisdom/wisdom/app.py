@@ -1,8 +1,7 @@
-import sqlite3
 from flask import Flask, render_template, request, redirect, url_for, flash, session, jsonify
-from datetime import datetime
+import sqlite3
 from werkzeug.security import generate_password_hash, check_password_hash
-
+from datetime import datetime
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'your_secret_key'
@@ -10,6 +9,8 @@ app.config['SECRET_KEY'] = 'your_secret_key'
 # Database setup
 conn = sqlite3.connect('database.db', check_same_thread=False)
 cursor = conn.cursor()
+
+# Create users table if not exists
 cursor.execute('''
     CREATE TABLE IF NOT EXISTS users (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -19,6 +20,7 @@ cursor.execute('''
 ''')
 conn.commit()
 
+# Create user_data table if not exists
 cursor.execute('''
     CREATE TABLE IF NOT EXISTS user_data (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -30,7 +32,7 @@ cursor.execute('''
 ''')
 conn.commit()
 
-
+# Routes
 
 @app.route('/')
 def home():
@@ -38,7 +40,6 @@ def home():
         return redirect(url_for('chat'))
     else:
         return redirect(url_for('login'))
-
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -61,13 +62,11 @@ def login():
 
     return render_template('login.html')
 
-
 @app.route('/logout')
 def logout():
     # Clear the session or perform any other necessary logout logic
     session.clear()
     return redirect(url_for('login'))  # Redirect to login page or another suitable endpoint
-
 
 @app.route('/chat', methods=['GET', 'POST'])
 def chat():
@@ -85,7 +84,6 @@ def chat():
     username = session['username']
     user_data = get_user_data_with_timestamp(username)
     return render_template('chat.html', username=username, user_data=user_data)
-
 
 @app.route('/signup', methods=['GET', 'POST'])
 def signup():
@@ -108,27 +106,16 @@ def signup():
 
     return render_template('signup.html')
 
-
 # Helper functions
+
 def get_user(username):
     cursor.execute('SELECT * FROM users WHERE username=?', (username,))
     return cursor.fetchone()
-
-
-def get_user_data_with_timestamp(username):
-    user = get_user(username)
-    if user:
-        cursor.execute('SELECT timestamp, session_data FROM user_data WHERE user_id=?', (user[0],))
-        user_data = cursor.fetchall()
-        return user_data
-    return None
-
 
 def create_user(username, password):
     cursor.execute('INSERT INTO users (username, password) VALUES (?, ?)', (username, password))
     conn.commit()
     return cursor.lastrowid
-
 
 def save_user_data(username, session_data):
     user = get_user(username)
@@ -137,27 +124,6 @@ def save_user_data(username, session_data):
         cursor.execute('INSERT INTO user_data (user_id, session_data, timestamp) VALUES (?, ?, ?)', (user[0], session_data, timestamp))
         conn.commit()
 
-
-# Define the generate_response function
-def generate_response(user_input):
-    # This is a simple example, you should replace it with your own logic
-    if user_input.lower() == 'hello':
-        return 'Hi there! How can I help you?'
-    else:
-        return "I'm sorry, I didn't understand that."
-
-
-@app.route('/fetch_data')
-def fetch_data():
-    if 'username' not in session:
-        flash('Please login first.', 'danger')
-        return redirect(url_for('login'))
-
-    username = session['username']
-    user_data = get_user_data_with_timestamp(username)
-    return render_template('fetch_data.html', username=username, user_data=user_data)
-
-
 def get_user_data_with_timestamp(username):
     user = get_user(username)
     if user:
@@ -166,13 +132,12 @@ def get_user_data_with_timestamp(username):
         return user_data
     return None
 
-
-def save_user_data(username, data):
-    user = get_user(username)
-    if user:
-        timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-        cursor.execute('INSERT INTO user_data (user_id, timestamp, data) VALUES (?, ?, ?)', (user[0], timestamp, data))
-        conn.commit()
+def generate_response(user_input):
+    # Replace this function with your logic to generate a response
+    if user_input.lower() == 'hello':
+        return 'Hi there! How can I help you?'
+    else:
+        return "I'm sorry, I didn't understand that."
 
 if __name__ == '__main__':
     app.run(debug=True)
