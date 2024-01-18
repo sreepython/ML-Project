@@ -2,6 +2,8 @@ from flask import Flask, render_template, request, redirect, url_for, flash, ses
 import sqlite3
 from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime
+from models_script import generate_text
+
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'your_secret_key'
@@ -133,9 +135,11 @@ def get_user_data_with_timestamp(username):
     return None
 
 def generate_response(user_input):
-    # Replace this function with your logic to generate a response
-    if user_input.lower() == 'hello':
-        return 'Hi there! How can I help you?'
+    
+    if user_input:
+        model_name = "microsoft/phi-2"
+        generated_text = generate_text(model_name, user_input)
+        return (generated_text)
     else:
         return "I'm sorry, I didn't understand that."
 
