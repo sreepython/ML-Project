@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style_login.css') }}">
+    <title>Login</title>
+</head>
+<body>
+    <div class="container">
+        <div class="left-half">
+            <h1>Login</h1>
+            <form method="post">
+                <label for="username">Username:</label>
+                <input type="text" id="username" name="username" required>
+
+                <label for="password">Password:</label>
+                <input type="password" id="password" name="password" required>
+
+                <button type="submit">Login</button>
+                <p>Don't have an account? <a href="{{ url_for('signup') }}">Sign up</a></p>
+            </form>
+        </div>
+        <div class="right-half">
+            <img src="{{ url_for('static', filename='images/logo.png') }}" alt="Logo">
+            <p>Welcome to our website! Log in to access exclusive features.</p>
+        </div>
+    </div>
+</body>
+</html>
