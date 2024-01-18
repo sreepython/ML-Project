@@ -9,14 +9,13 @@
     <h1>Welcome, {{ username }}!</h1>
     <h2>Your Session Data:</h2>
     
-    <ul>
-        {% for timestamp, data in user_data %}
-            <li>
-                <strong>{{ timestamp }}:</strong> {{ data }}
-            </li>
-        {% endfor %}
-    </ul>
-    
+<ul>
+    {% for timestamp, session_data in user_data %}
+        <li>
+            <strong>{{ timestamp }}:</strong> {{ session_data }}
+        </li>
+    {% endfor %}
+</ul>
     <p><a href="{{ url_for('chat') }}">Back to Chat</a></p>
 </body>
 </html>

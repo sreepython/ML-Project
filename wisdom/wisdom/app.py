@@ -23,12 +23,13 @@ cursor.execute('''
     CREATE TABLE IF NOT EXISTS user_data (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         user_id INTEGER,
+        session_data TEXT,
         timestamp TEXT NOT NULL,
-        data TEXT,
         FOREIGN KEY (user_id) REFERENCES users (id)
     )
 ''')
 conn.commit()
+
 
 
 @app.route('/')
@@ -82,7 +83,7 @@ def chat():
         return jsonify({'response': response})
 
     username = session['username']
-    user_data = get_user_data(username)
+    user_data = get_user_data_with_timestamp(username)
     return render_template('chat.html', username=username, user_data=user_data)
 
 
@@ -103,8 +104,7 @@ def signup():
             hashed_password = generate_password_hash(password, method='pbkdf2:sha256')
             user_id = create_user(username, hashed_password)
             flash('Signup successful! You can now log in.', 'success')
-            session['username'] = username
-            return redirect(url_for('chat'))
+            return redirect(url_for('login'))
 
     return render_template('signup.html')
 
@@ -115,13 +115,12 @@ def get_user(username):
     return cursor.fetchone()
 
 
-def get_user_data(username):
+def get_user_data_with_timestamp(username):
     user = get_user(username)
     if user:
-        cursor.execute('SELECT data FROM user_data WHERE user_id=?', (user[0],))
-        user_data = cursor.fetchone()
-        if user_data:
-            return user_data[0]
+        cursor.execute('SELECT timestamp, session_data FROM user_data WHERE user_id=?', (user[0],))
+        user_data = cursor.fetchall()
+        return user_data
     return None
 
 
@@ -131,10 +130,11 @@ def create_user(username, password):
     return cursor.lastrowid
 
 
-def save_user_data(username, data):
+def save_user_data(username, session_data):
     user = get_user(username)
     if user:
-        cursor.execute('INSERT OR REPLACE INTO user_data (user_id, data) VALUES (?, ?)', (user[0], data))
+        timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        cursor.execute('INSERT INTO user_data (user_id, session_data, timestamp) VALUES (?, ?, ?)', (user[0], session_data, timestamp))
         conn.commit()
 
 
@@ -158,11 +158,10 @@ def fetch_data():
     return render_template('fetch_data.html', username=username, user_data=user_data)
 
 
-# Helper functions
 def get_user_data_with_timestamp(username):
     user = get_user(username)
     if user:
-        cursor.execute('SELECT timestamp, data FROM user_data WHERE user_id=?', (user[0],))
+        cursor.execute('SELECT timestamp, session_data FROM user_data WHERE user_id=?', (user[0],))
         user_data = cursor.fetchall()
         return user_data
     return None
