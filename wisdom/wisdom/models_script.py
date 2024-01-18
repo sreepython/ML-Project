@@ -2,11 +2,21 @@ import torch
 from transformers import AutoModelForCausalLM, AutoTokenizer
 
 def generate_text(model_name, user_input):
-    torch.set_default_device("cpu")
-    model = AutoModelForCausalLM.from_pretrained(model_name, torch_dtype=torch.float32, device_map="cpu", trust_remote_code=True)
-    tokenizer = AutoTokenizer.from_pretrained(model_name, trust_remote_code=True)
+    # Set device for the model
+    device = torch.device("cpu")
+    model = AutoModelForCausalLM.from_pretrained(model_name).to(device)
+    
+    # Set device for the tokenizer
+    tokenizer = AutoTokenizer.from_pretrained(model_name)
+    
+    # Encode user input
     inputs = tokenizer(user_input, return_tensors="pt", return_attention_mask=False)
 
+    # Move inputs to the device
+    for key in inputs:
+        inputs[key] = inputs[key].to(device)
+
+    # Generate text
     outputs = model.generate(**inputs, max_length=512)
     text = tokenizer.batch_decode(outputs)[0]
     print(text)
