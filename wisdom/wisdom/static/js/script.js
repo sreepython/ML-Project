@@ -1,5 +1,3 @@
-// script.js
-
 document.addEventListener('DOMContentLoaded', function() {
     const chatForm = document.getElementById('chat-form');
     const userInput = document.getElementById('user-input');
@@ -21,6 +19,9 @@ document.addEventListener('DOMContentLoaded', function() {
             appendMessage('You', userMessage);
             userInput.value = '';
 
+            // Show loading spinner while waiting for the response
+            showLoadingSpinner();
+
             // Send user input to the server
             fetch('/chat', {
                 method: 'POST',
@@ -31,8 +32,16 @@ document.addEventListener('DOMContentLoaded', function() {
             })
             .then(response => response.json())
             .then(data => {
+                // Hide loading spinner when the response is received
+                hideLoadingSpinner();
+
                 const serverResponse = data.response;
                 appendMessage('Server', serverResponse);
+            })
+            .catch(error => {
+                // Handle errors, if any
+                console.error('Error:', error);
+                hideLoadingSpinner();
             });
         }
     }
@@ -42,5 +51,15 @@ document.addEventListener('DOMContentLoaded', function() {
         messageElement.innerHTML = `<strong>${sender}:</strong> ${message}`;
         chatMessages.appendChild(messageElement);
         chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+
+    function showLoadingSpinner() {
+        // Show loading spinner
+        document.getElementById('loading-spinner').style.display = 'block';
+    }
+
+    function hideLoadingSpinner() {
+        // Hide loading spinner
+        document.getElementById('loading-spinner').style.display = 'none';
     }
 });

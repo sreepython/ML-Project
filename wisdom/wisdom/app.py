@@ -3,10 +3,13 @@ import sqlite3
 from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime
 from models_script import generate_text
+from celery import Celery
 
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'your_secret_key'
+
+celery = Celery(__name__)
 
 # Database setup
 conn = sqlite3.connect('database.db', check_same_thread=False)
@@ -134,11 +137,12 @@ def get_user_data_with_timestamp(username):
         return user_data
     return None
 
+@celery.task
 def generate_response(user_input):
-    
     if user_input:
         model_name = "microsoft/phi-2"
         generated_text = generate_text(model_name, user_input)
+        print(generate_text)
         return (generated_text)
     else:
         return "I'm sorry, I didn't understand that."
