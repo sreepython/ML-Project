@@ -1,48 +1,75 @@
-from transformers import AutoTokenizer, AutoModelForCausalLM
+from transformers import AutoTokenizer, AutoModel
 import torch
-# import time
 
-def generate_text(model_name, text, max_length=50):
+def generate_text(model_name, text, max_length=50, vocab_size=50308):
     # Load pre-trained model and tokenizer
     tokenizer = AutoTokenizer.from_pretrained(model_name)
-    model = AutoModelForCausalLM.from_pretrained(model_name)
+    model = AutoModel.from_pretrained(model_name)
+
+    # Check if GPU is available
+    if torch.cuda.is_available():
+        print("Using GPU for computation...")
+        device = torch.device('cuda')
+        model.to(device)
+    else:
+        print("GPU not available, falling back to CPU...")
+        device = torch.device('cpu')
 
     # Tokenize input text
-    input_ids = tokenizer.encode(text, return_tensors="pt")
+    input_ids = tokenizer.encode(text + ' ', return_tensors="pt").to(device)
 
-    # Move the model and input tensors to CPU
-    model.to("cpu")
-    input_ids = input_ids.to("cpu")
+    # Initialize empty list for storing tokens
+    sequence = []
 
     # Generate text using the model
     with torch.no_grad():
-        output = model.generate(
-            input_ids,
-            max_length=max_length,
-            num_beams=5,
-            no_repeat_ngram_size=2,
-            length_penalty=0.6,
-            top_k=50,
-            top_p=0.92,
-            temperature=0.75,
-            use_cache=True
-        )
+        hidden_states = model(input_ids)[0]
 
-    print("===================================================================")
-    print(output)
-    print("======================================================")
-    # Decode the generated text
-    generated_text = tokenizer.decode(output[0], skip_special_tokens=True)
-    # time.sleep(10)
-    # generated_text = """Great! Your HTML and CSS structure looks well-organized and should work fine with the added functionality. The CSS styles you've defined are clear, and your HTML structure follows best practices.
+    # Process hidden states
+    for idx in range(hidden_states.shape[-1]):
+        logits = hidden_states[:, -1, :]  # Adjusted line
 
-    #                         If you've implemented the JavaScript modifications and added the loading spinner as discussed in the previous responses, your chat interface should now display a loading spinner when sending a message and hide it once the response is received.
+        # Ensure logits are not nan or inf
+        if torch.isnan(logits).any() or torch.isinf(logits).any() or (logits < 0).any():
+            print("Invalid logits detected. Breaking the loop.")
+            break
 
-    #                             Remember that the provided CSS styles and HTML structure are responsive, ensuring a good user experience on different screen sizes. The @media query in your CSS handles the responsiveness for smaller screens."""
-    return generated_text
+        next_token_logits = logits[:, :]  # Corrected line
+
+        # Ensure next_token_logits are not nan or inf
+        if torch.isnan(next_token_logits).any() or torch.isinf(next_token_logits).any() or (next_token_logits < 0).any():
+            print("Invalid next_token_logits detected. Breaking the loop.")
+            break
+
+        # Sample the next token index
+        sampled_index = torch.multinomial(next_token_logits, num_samples=1, replacement=True).item()
+
+        # Get the corresponding word
+        word = tokenizer.decode(sampled_index)
+
+        # Append the word to the sequence
+        sequence.append(word)
+
+        # Stop processing once the end token is found
+        if word == " ":
+            break
+
+    # Format the result
+    generated_text = "\n".join(sequence[:-1])
+    assistant_prompt = f"\nAssistant:\n{generated_text}"
+    user_prompt = f"\nUser: {text}\n"
+    combined_response = user_prompt + assistant_prompt
+    return combined_response
 
 # Example usage
 # model_name = "microsoft/phi-2"
-# input_text = "Once upon a time"
+# input_text = "What is convergence in networking?"
 # generated_text = generate_text(model_name, input_text)
 # print(generated_text)
+
+You: What is convergence in networking?
+Server: User: What is convergence in networking? Assistant:
+You: what are you?
+Server: User: what are you? Assistant: 
+
+This what I am getting fine tune it and get full answer 
