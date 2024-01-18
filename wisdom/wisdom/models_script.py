@@ -1,4 +1,3 @@
-import re
 import torch
 from transformers import AutoModelForCausalLM, AutoTokenizer
 
@@ -12,16 +11,16 @@ def generate_text(model_name, user_input):
     text = tokenizer.batch_decode(outputs)[0]
     print(text)
 
-    # Use a regular expression to identify and extract answers
-    answers = re.split(r'\d+\. ', text)
+    # Split the text based on empty lines and select the first non-empty part
+    answers = [part.strip() for part in text.split('\n\n') if part.strip()]
     
     # Extract the first answer if available
-    first_answer = answers[1].strip() if len(answers) > 1 else "No answer found."
+    first_answer = answers[0] if answers else "No answer found."
     
     return first_answer
 
-# # Example usage
+# Example usage
 # model_name = "microsoft/phi-2"
-# input_text = "What is convergence in networking?"
+# input_text = "What are you?"
 # first_answer = generate_text(model_name, input_text)
 # print(first_answer)
