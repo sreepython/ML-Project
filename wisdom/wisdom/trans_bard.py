@@ -36,14 +36,26 @@ def train_model(model, tokenized_texts):
     """Trains the model on the provided data."""
     optimizer = transformers.AdamW(model.parameters(), lr=5e-5)
     for epoch in range(3):
+        print(f"Epoch {epoch+1}:")
         # Forward pass
         outputs = model(**tokenized_texts)
+        print(f"Outputs: {outputs}")  # Inspect model output
+
+        # Check for loss
+        if "loss" not in outputs:
+            print("Warning: Loss not found in model output. Check model configuration and loss function.")
+            continue  # Skip backward pass and optimization if loss is missing
+
         loss = outputs.loss
+        print(f"Loss: {loss}")
 
         # Backward pass and optimization
         optimizer.zero_grad()
         loss.backward()
         optimizer.step()
+
+        print(f"Epoch {epoch+1} completed.")
+
 
     logging.info(f"Model training completed successfully")
 
