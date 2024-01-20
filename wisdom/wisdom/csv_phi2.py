@@ -47,7 +47,14 @@ def fine_tune_model(train_file, output_dir, model_name="microsoft/phi-2", epochs
     model.save_pretrained(output_dir)
     tokenizer.save_pretrained(output_dir)
 
-# Replace 'path/to/your/fine_tuned_phi2_model' and 'path/to/your/data.csv' with actual paths
+# Function to generate a response from the model
+def generate_response(model, tokenizer, input_text, max_length=100):
+    input_ids = tokenizer(input_text, return_tensors="pt", padding=True, truncation=True)["input_ids"]
+    output = model.generate(input_ids, max_length=max_length, num_return_sequences=1)[0]
+    generated_response = tokenizer.decode(output, skip_special_tokens=True)
+    return generated_response
+
+# Paths to CSV data and output directory for fine-tuned model
 train_csv_path = 'path/to/your/data.csv'
 output_model_path = 'path/to/your/fine_tuned_phi2_model'
 
