@@ -62,8 +62,8 @@ def main():
     try:
         data = load_data(csv_path)
         filtered_data = filter_data(data, filter_criteria)
-        texts = filtered_data["Summary"].tolist()  # Can combine multiple text columns if needed
 
+        # Extract relevant text fields based on Jira details
         text_fields = ["Summary", "Description", "Comment", "Environment", "Steps to Reproduce", "Resolution"]
         additional_fields = ["Reporter", "Assignee", "Labels", "Issue Type", "Priority", "Status"]
 
