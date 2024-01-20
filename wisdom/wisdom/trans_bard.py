@@ -55,7 +55,8 @@ def save_model(model, model_path):
 def main():
     """Main execution flow."""
     csv_path = "jira_data.csv"  # Replace with your CSV path
-    filter_criteria = "priority == 'Critical' & status == 'Open'"  # Adjust as needed
+    # filter_criteria = "priority == 'Critical' & status == 'Open'"  # Adjust as needed
+    filter_criteria = "(priority == 'Critical' | priority == 'Major') & (status == 'Open' | status == 'In Progress' | status == 'Validation Pending' | status == 'Targeted' | status == 'Committed' | status == 'Closed' | status == 'Resolved')"
     model_name = 'distilbert-base-uncased'
     model_path = "jira_trained_model"
 
