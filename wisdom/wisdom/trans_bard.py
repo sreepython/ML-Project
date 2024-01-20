@@ -64,6 +64,13 @@ def main():
         filtered_data = filter_data(data, filter_criteria)
         texts = filtered_data["Summary"].tolist()  # Can combine multiple text columns if needed
 
+        text_fields = ["Summary", "Description", "Comment", "Environment", "Steps to Reproduce", "Resolution"]
+        additional_fields = ["Reporter", "Assignee", "Labels", "Issue Type", "Priority", "Status"]
+
+        # Combine selected text fields
+        texts = filtered_data[text_fields].to_numpy().flatten().tolist()  # Combine primary text fields
+        texts.extend(filtered_data[additional_fields].to_numpy().flatten().tolist())  # Optionally add additional fields
+
         tokenized_texts = preprocess_text(texts)
         model = transformers.AutoModelForQuestionAnswering.from_pretrained(model_name)
         train_model(model, tokenized_texts)
