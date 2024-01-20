@@ -1,15 +1,15 @@
 import logging
-from transformers import TinyLlamaForConditionalGeneration, TinyLlamaTokenizer
+from transformers import GPT2LMHeadModel, GPT2Tokenizer
 from transformers import TextDataset, DataCollatorForLanguageModeling, Trainer, TrainingArguments
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 
-def fine_tune_model(train_file, output_dir, model_name="TinyLlama/TinyLlama-1.1B-Chat-v1.0", epochs=3):
+def fine_tune_model(train_file, output_dir, model_name="gpt2", epochs=3):
     # Load pre-trained model and tokenizer
     logging.info("Loading pre-trained model and tokenizer...")
-    model = TinyLlamaForConditionalGeneration.from_pretrained(model_name)
-    tokenizer = TinyLlamaTokenizer.from_pretrained(model_name)
+    model = GPT2LMHeadModel.from_pretrained(model_name)
+    tokenizer = GPT2Tokenizer.from_pretrained(model_name)
 
     # Load your training data
     logging.info("Loading training data...")
@@ -32,7 +32,7 @@ def fine_tune_model(train_file, output_dir, model_name="TinyLlama/TinyLlama-1.1B
         output_dir=output_dir,
         overwrite_output_dir=True,
         num_train_epochs=epochs,
-        per_device_train_batch_size=4,  # Adjust based on available GPU memory
+        per_device_train_batch_size=4,  # Adjust based on available CPU memory
         save_steps=10_000,
         save_total_limit=2,
     )
