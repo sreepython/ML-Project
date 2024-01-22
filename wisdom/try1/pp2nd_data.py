@@ -115,39 +115,39 @@ def split_data(preprocessed_data, test_size=0.2, val_size=0.1):
     return train_data, val_data, test_data
 
 
+if __name__ == "__main__":
+    # Example usage
+    # Example usage
+    logging.basicConfig(level=logging.INFO)
+    preprocessed_data = load_and_preprocess_data(r"C:\Users\sree\ML-Project\wisdom\try1\jira_data.csv", remove_stop_words=True)
+    max_len = 512
 
-# Example usage
-# Example usage
-logging.basicConfig(level=logging.INFO)
-preprocessed_data = load_and_preprocess_data(r"C:\Users\sree\ML-Project\wisdom\try1\jira_data.csv", remove_stop_words=True)
-max_len = 512
+    # encoded_data = tokenize_and_encode_data(preprocessed_data["cleaned_questions"], preprocessed_data["cleaned_answers"], max_len=max_len, padding="max_length")
+    # Replace "encoded_data" with your actual encoded data dictionaries for questions and answers
+    encoded_data = tokenize_and_encode_data(preprocessed_data["cleaned_questions"], preprocessed_data["cleaned_answers"])
 
-# encoded_data = tokenize_and_encode_data(preprocessed_data["cleaned_questions"], preprocessed_data["cleaned_answers"], max_len=max_len, padding="max_length")
-# Replace "encoded_data" with your actual encoded data dictionaries for questions and answers
-encoded_data = tokenize_and_encode_data(preprocessed_data["cleaned_questions"], preprocessed_data["cleaned_answers"])
+    # Pad sequences to the desired maximum length (adjust to your needs)
+    padded_questions = pad_sequences(encoded_data["input_ids"], maxlen=max_len, padding="post", value=0)
+    padded_answers = pad_sequences(encoded_data["labels"], maxlen=max_len, padding="post", value=0)
 
-# Pad sequences to the desired maximum length (adjust to your needs)
-padded_questions = pad_sequences(encoded_data["input_ids"], maxlen=max_len, padding="post", value=0)
-padded_answers = pad_sequences(encoded_data["labels"], maxlen=max_len, padding="post", value=0)
+    # Update the encoded data dictionary with the padded sequences
+    encoded_data["input_ids"] = padded_questions
+    encoded_data["labels"] = padded_answers
 
-# Update the encoded data dictionary with the padded sequences
-encoded_data["input_ids"] = padded_questions
-encoded_data["labels"] = padded_answers
+    # Now you have preprocessed, encoded, and padded data ready for training!
 
-# Now you have preprocessed, encoded, and padded data ready for training!
+    # Remove the following lines, as there is no 'encoded_questions' key in your dictionary
+    # encoded_questions = encoded_data["encoded_questions"]
+    # encoded_answers = encoded_data["encoded_answers"]
 
-# Remove the following lines, as there is no 'encoded_questions' key in your dictionary
-# encoded_questions = encoded_data["encoded_questions"]
-# encoded_answers = encoded_data["encoded_answers"]
+    train_data, val_data, test_data = split_data(encoded_data)
 
-train_data, val_data, test_data = split_data(encoded_data)
-
-print(preprocessed_data)
-print("=================================================================")
-print(encoded_data)
-print("=================================================================")
-print("Training data:", train_data)
-print("=================================================================")
-print("Validation data:", val_data)
-print("=================================================================")
-print("Test data:", test_data)
+    print(preprocessed_data)
+    print("=================================================================")
+    print(encoded_data)
+    print("=================================================================")
+    print("Training data:", train_data)
+    print("=================================================================")
+    print("Validation data:", val_data)
+    print("=================================================================")
+    print("Test data:", test_data)
